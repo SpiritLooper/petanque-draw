@@ -7,15 +7,11 @@ import (
 type playerSet map[Player]struct{}
 type playerEncountered map[Player]playerSet
 
-func lastRoundDrawConsistent(actualDraw Round, previousDraws Tournament, numberPlayer int) bool {
-	if len(previousDraws) == 0 {
-		return true
-	}
-
+func (t Tournament) CountCollision() int {
 	var playerEncountered = make(map[Player]playerSet)
 
 	// Setup Encountered Matrix
-	for _, game := range actualDraw {
+	for _, game := range t[0] {
 		for _, player := range game.Team1 {
 			playerEncountered[player] = playerSet{}
 			for _, otherPlayer := range game.Team1 {
@@ -43,22 +39,22 @@ func lastRoundDrawConsistent(actualDraw Round, previousDraws Tournament, numberP
 			}
 		}
 	}
-
+	nbCollision := 0
 	// Checking double encontered
-	for _, draw := range previousDraws {
+	for _, draw := range t[1:] {
 		for _, game := range draw {
 			for _, player := range game.Team1 {
 				for _, otherPlayer := range game.Team1 {
 					_, exist := playerEncountered[player][otherPlayer]
 					if exist {
-						return false
+						nbCollision += 1
 					}
 				}
 				for _, otherPlayer := range game.Team2 {
 					if player != otherPlayer {
 						_, exist := playerEncountered[player][otherPlayer]
 						if exist {
-							return false
+							nbCollision += 1
 						}
 					}
 				}
@@ -67,14 +63,14 @@ func lastRoundDrawConsistent(actualDraw Round, previousDraws Tournament, numberP
 				for _, otherPlayer := range game.Team1 {
 					_, exist := playerEncountered[player][otherPlayer]
 					if exist {
-						return false
+						nbCollision += 1
 					}
 				}
 				for _, otherPlayer := range game.Team2 {
 					if player != otherPlayer {
 						_, exist := playerEncountered[player][otherPlayer]
 						if exist {
-							return false
+							nbCollision += 1
 						}
 					}
 				}
@@ -82,7 +78,7 @@ func lastRoundDrawConsistent(actualDraw Round, previousDraws Tournament, numberP
 		}
 	}
 
-	return true
+	return nbCollision
 }
 
 func drawPlayer(set *intset.IntSet) Player {
@@ -93,23 +89,17 @@ func drawPlayer(set *intset.IntSet) Player {
 	return Player(number)
 }
 
-func DrawTournament(nbPlayer int, nbRound int, maxField int) Tournament {
+func DrawRandomTournament(nbPlayer int, nbRound int, maxField int) Tournament {
 	var tournament Tournament
 	for range nbRound {
-		var round Round
-		for {
-			round = Round{}
-			set := intset.CreateIntSet(nbPlayer)
+		round := Round{}
+		set := intset.CreateIntSet(nbPlayer)
 
-			for !intset.IsEmpty(set) {
-				player := drawPlayer(&set)
-				placePlayerInRound(player, &round, intset.Count(set)+1, maxField)
-			}
-
-			if lastRoundDrawConsistent(round, tournament, nbPlayer) {
-				break
-			}
+		for !intset.IsEmpty(set) {
+			player := drawPlayer(&set)
+			placePlayerInRound(player, &round, intset.Count(set)+1, maxField)
 		}
+
 		tournament = append(tournament, round)
 	}
 	return tournament

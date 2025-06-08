@@ -1,6 +1,9 @@
 package tournament
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Tournament []Round
 type Round []Game
@@ -9,6 +12,24 @@ type Game struct {
 	Team2 []Player
 }
 type Player int
+
+func (t *Tournament) Display() {
+	for i, rounds := range *t {
+		fmt.Printf("\tRonde %d\n", i+1)
+		for j, game := range rounds {
+			fmt.Printf("Terrain %d : [ ", j+1)
+			for _, player := range game.Team1 {
+				fmt.Printf("%d ", player+1)
+			}
+			fmt.Printf("] | [ ")
+			for _, player := range game.Team2 {
+				fmt.Printf("%d ", player+1)
+			}
+			fmt.Printf("]\n")
+		}
+		fmt.Println("--------------------------")
+	}
+}
 
 func gamePlayersIsFull(game Game) bool {
 	return len(game.Team1) >= 3 && len(game.Team2) >= 3
