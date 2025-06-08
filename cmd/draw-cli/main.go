@@ -7,11 +7,11 @@ import (
 
 const (
 	MAX_FIELD = 8
-	NB_ROUNDS = 4
+	NB_ROUNDS = 3
 )
 
 func main() {
-	tournament := tournament.DrawTournament(38, NB_ROUNDS, MAX_FIELD)
+	tournament := tournament.DrawTournament(32, NB_ROUNDS, MAX_FIELD)
 
 	for i, rounds := range tournament {
 		fmt.Printf("\tRonde %d\n", i+1)
