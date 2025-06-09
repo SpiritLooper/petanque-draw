@@ -26,7 +26,7 @@ type EvaluatedTournament struct {
 func generateInitialPopulation() []EvaluatedTournament {
 	pop := make([]EvaluatedTournament, populationSz)
 	for i := range pop {
-		pop[i].Tournament = tournament.DrawRandomTournament(nPlayers, nRounds, nTerrains)
+		pop[i].Tournament = tournament.DrawTournament(nPlayers, nRounds, nTerrains)
 		pop[i].Fitness = evaluateFitness(pop[i].Tournament)
 	}
 	return pop
