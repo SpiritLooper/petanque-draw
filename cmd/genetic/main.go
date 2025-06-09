@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	nPlayers     = 12
-	nRounds      = 2
-	nTerrains    = 2
+	nPlayers     = 24
+	nRounds      = 4
+	nTerrains    = 9
 	populationSz = 1000000
 	nGenerations = 10
 	mutationRate = 0.2

@@ -82,7 +82,7 @@ func (t Tournament) CountCollision() int {
 }
 
 func drawPlayer(set *intset.IntSet) Player {
-	number, err := intset.RandomPop(set)
+	number, err := set.RandomPop()
 	if err != nil {
 		panic(err)
 	}
@@ -95,9 +95,9 @@ func DrawRandomTournament(nbPlayer int, nbRound int, maxField int) Tournament {
 		round := Round{}
 		set := intset.CreateIntSet(nbPlayer)
 
-		for !intset.IsEmpty(set) {
+		for !set.IsEmpty() {
 			player := drawPlayer(&set)
-			placePlayerInRound(player, &round, intset.Count(set)+1, maxField)
+			placePlayerInRound(player, &round, set.Count()+1, maxField)
 		}
 
 		tournament = append(tournament, round)

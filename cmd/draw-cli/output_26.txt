@@ -1,0 +1,29 @@
+	Ronde 1
+Terrain 1 : [ 2 21 13 ] | [ 22 18 14 ]
+Terrain 2 : [ 8 24 ] | [ 11 6 ]
+Terrain 3 : [ 19 26 ] | [ 20 5 ]
+Terrain 4 : [ 10 16 ] | [ 12 9 ]
+Terrain 5 : [ 25 17 ] | [ 7 23 ]
+Terrain 6 : [ 4 1 ] | [ 3 15 ]
+	Ronde 2
+Terrain 1 : [ 19 1 8 ] | [ 21 18 10 ]
+Terrain 2 : [ 16 22 ] | [ 15 11 ]
+Terrain 3 : [ 24 12 ] | [ 4 25 ]
+Terrain 4 : [ 14 17 ] | [ 26 3 ]
+Terrain 5 : [ 2 7 ] | [ 6 20 ]
+Terrain 6 : [ 9 13 ] | [ 5 23 ]
+	Ronde 3
+Terrain 1 : [ 20 24 13 ] | [ 25 10 1 ]
+Terrain 2 : [ 26 6 ] | [ 4 18 ]
+Terrain 3 : [ 8 14 ] | [ 23 5 ]
+Terrain 4 : [ 7 15 ] | [ 12 22 ]
+Terrain 5 : [ 9 2 ] | [ 17 11 ]
+Terrain 6 : [ 19 16 ] | [ 3 21 ]
+	Ronde 4
+Terrain 1 : [ 5 16 17 ] | [ 22 3 6 ]
+Terrain 2 : [ 23 8 ] | [ 21 12 ]
+Terrain 3 : [ 26 14 ] | [ 24 10 ]
+Terrain 4 : [ 13 15 ] | [ 18 19 ]
+Terrain 5 : [ 11 1 ] | [ 2 7 ]
+Terrain 6 : [ 20 25 ] | [ 4 9 ]
+Nb Collision : 2

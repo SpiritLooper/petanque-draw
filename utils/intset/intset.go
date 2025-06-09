@@ -15,16 +15,16 @@ func CreateIntSet(n int) IntSet {
 	return set
 }
 
-func IsEmpty(set IntSet) bool {
+func (set IntSet) IsEmpty() bool {
 	return len(set) == 0
 }
 
-func Count(set IntSet) int {
+func (set IntSet) Count() int {
 	return len(set)
 }
 
-func RandomPop(set *IntSet) (int, error) {
-	if IsEmpty(*set) {
+func (set *IntSet) RandomPop() (int, error) {
+	if set.IsEmpty() {
 		return 0, errors.New("Calling RandomPop on empty Set")
 	}
 
