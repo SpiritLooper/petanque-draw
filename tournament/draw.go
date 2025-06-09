@@ -7,7 +7,8 @@ import (
 	"slices"
 )
 
-const MAX_DEPTH_LOG = 5
+const MAX_DEPTH_LOG = 2
+const MAX_COLLISION_FOUND = 2
 
 type RoundState struct {
 	playersNotInGames []int
@@ -139,7 +140,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 	for i, iPlayer := range rs.playersNotInGames {
 		newRound := rs.round.Clone()
 		newGame := rs.round[len(rs.round)-1]
-		if newGame.collisionFoundIfIplaceThisPlayer(Player(iPlayer), playerEverEncountered) == 0 {
+		if newGame.collisionFoundIfIplaceThisPlayer(Player(iPlayer), playerEverEncountered) <= MAX_COLLISION_FOUND {
 			newGame.placePlayerInGame(Player(iPlayer))
 			newRound[len(rs.round)-1] = newGame
 			newPlayersNotPlaced := slices.Concat(rs.playersNotInGames[:i], rs.playersNotInGames[i+1:])

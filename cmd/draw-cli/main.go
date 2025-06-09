@@ -12,7 +12,7 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
-// findSystemFont cherche une police sur le système NixOS
+// findSystemFont cherche une police sur le systeme NixOS
 func findSystemFont(fontName string) (string, bool) {
 	// Chemins typiques pour les polices sur NixOS
 	fontPaths := []string{
@@ -31,7 +31,7 @@ func findSystemFont(fontName string) (string, bool) {
 			continue
 		}
 
-		// Chercher récursivement dans tous les sous-dossiers
+		// Chercher recursivement dans tous les sous-dossiers
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return nil // Ignorer les erreurs et continuer
@@ -41,10 +41,10 @@ func findSystemFont(fontName string) (string, bool) {
 				fileName := strings.ToLower(filepath.Base(path))
 				fontNameLower := strings.ToLower(fontName)
 
-				// Vérifier si le nom du fichier contient le nom de la police
+				// Verifier si le nom du fichier contient le nom de la police
 				for _, ext := range extensions {
 					if strings.Contains(fileName, fontNameLower) && strings.HasSuffix(fileName, strings.ToLower(ext)) {
-						return fmt.Errorf("found: %s", path) // Utiliser erreur pour arrêter la recherche
+						return fmt.Errorf("found: %s", path) // Utiliser erreur pour arreter la recherche
 					}
 				}
 			}
@@ -59,9 +59,9 @@ func findSystemFont(fontName string) (string, bool) {
 	return "", false
 }
 
-// setupFonts configure les polices du système
+// setupFonts configure les polices du systeme
 func setupFonts(pdf *gofpdf.Fpdf) {
-	// Ordre de préférence des polices
+	// Ordre de preference des polices
 	fontPreferences := []string{
 		"Inter", "Roboto", "Ubuntu", "DejaVu Sans", "Liberation Sans",
 		"Noto Sans", "Source Sans Pro", "Open Sans", "Lato", "Nunito",
@@ -71,7 +71,7 @@ func setupFonts(pdf *gofpdf.Fpdf) {
 	var fontPath string
 	var found bool
 
-	// Chercher la première police disponible
+	// Chercher la premiere police disponible
 	for _, font := range fontPreferences {
 		if fontPath, found = findSystemFont(font); found {
 			selectedFont = font
@@ -80,16 +80,16 @@ func setupFonts(pdf *gofpdf.Fpdf) {
 	}
 
 	if !found {
-		log.Println("Aucune police système trouvée, utilisation de la police par défaut")
+		log.Println("Aucune police systeme trouvee, utilisation de la police par defaut")
 		return
 	}
 
-	log.Printf("Police sélectionnée: %s (%s)", selectedFont, fontPath)
+	log.Printf("Police selectionnee: %s (%s)", selectedFont, fontPath)
 
 	// Essayer d'ajouter la police
 	pdf.AddUTF8Font(selectedFont, "", fontPath)
 
-	// Chercher les variantes (gras, italique) dans le même répertoire
+	// Chercher les variantes (gras, italique) dans le meme repertoire
 	fontDir := filepath.Dir(fontPath)
 	fontBaseName := strings.ToLower(selectedFont)
 
@@ -107,20 +107,20 @@ func setupFonts(pdf *gofpdf.Fpdf) {
 			return nil
 		}
 
-		// Vérifier pour les variantes en gras
+		// Verifier pour les variantes en gras
 		for _, variant := range boldVariants {
 			if strings.Contains(fileName, variant) && !strings.Contains(fileName, "italic") {
 				pdf.AddUTF8Font(selectedFont, "B", path)
-				log.Printf("Police gras ajoutée: %s", path)
+				log.Printf("Police gras ajoutee: %s", path)
 				return nil
 			}
 		}
 
-		// Vérifier pour les variantes en italique
+		// Verifier pour les variantes en italique
 		for _, variant := range italicVariants {
 			if strings.Contains(fileName, variant) && !strings.Contains(fileName, "bold") {
 				pdf.AddUTF8Font(selectedFont, "I", path)
-				log.Printf("Police italique ajoutée: %s", path)
+				log.Printf("Police italique ajoutee: %s", path)
 				return nil
 			}
 		}
@@ -129,26 +129,26 @@ func setupFonts(pdf *gofpdf.Fpdf) {
 	})
 }
 
-// TournamentPDFGenerator génère un PDF pour les tournois
+// TournamentPDFGenerator genere un PDF pour les tournois
 type TournamentPDFGenerator struct {
 	pdf *gofpdf.Fpdf
 }
 
-// NewTournamentPDFGenerator crée un nouveau générateur PDF avec polices système
+// NewTournamentPDFGenerator cree un nouveau generateur PDF avec polices systeme
 func NewTournamentPDFGenerator() *TournamentPDFGenerator {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 
-	// Configurer les polices système
+	// Configurer les polices systeme
 	setupFonts(pdf)
 
 	return &TournamentPDFGenerator{pdf: pdf}
 }
 
-// GenerateTournamentPage génère une page pour un tournoi donné
+// GenerateTournamentPage genere une page pour un tournoi donne
 func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.Tournament, playerCount int) {
 	g.pdf.AddPage()
 
-	// En-tête principal
+	// En-tete principal
 	g.pdf.SetFont("Arial", "B", 20)
 	g.pdf.SetTextColor(44, 62, 80)
 	g.pdf.CellFormat(0, 15, fmt.Sprintf("Tournoi de Petanque - %d Joueurs", playerCount), "", 1, "C", false, 0, "")
@@ -161,11 +161,104 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 	g.pdf.CellFormat(0, 6, fmt.Sprintf("4 rondes - %d parties - %d terrains max", totalGames, len((*tournament)[0])), "", 1, "C", false, 0, "")
 	g.pdf.Ln(8)
 
-	// Génération des rondes en 2 colonnes
+	// Generation des rondes en 2 colonnes
 	g.addRoundsInTwoColumns(tournament)
 
-	// Pied de page avec numéros des joueurs
+	// Pied de page avec numeros des joueurs
 	g.addPlayerNumbers(playerCount)
+}
+
+// GenerateCollisionPage genere une page avec les collisions
+func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.Tournament, playerCount int) {
+	g.pdf.AddPage()
+
+	// En-tete principal
+	g.pdf.SetFont("Arial", "B", 20)
+	g.pdf.SetTextColor(44, 62, 80)
+	g.pdf.CellFormat(0, 15, "Analyse des Collisions", "", 1, "C", false, 0, "")
+	g.pdf.Ln(5)
+
+	// Statistiques generales
+	collisionCount := tournament.CountCollision()
+	g.pdf.SetFont("Arial", "B", 12)
+	g.pdf.SetTextColor(52, 73, 94)
+	g.pdf.CellFormat(0, 8, fmt.Sprintf("Nombre total de collisions: %d", collisionCount), "", 1, "L", false, 0, "")
+	g.pdf.Ln(5)
+
+	// Recuperer les collisions
+	collisions := tournament.GetCollision()
+
+	if collisionCount == 0 {
+		// Aucune collision
+		g.pdf.SetFont("Arial", "I", 12)
+		g.pdf.SetTextColor(39, 174, 96)
+		g.pdf.CellFormat(0, 10, "Aucune collision detectee ! Tournoi parfaitement equilibre.", "", 1, "C", false, 0, "")
+	} else {
+		// Affichage des collisions
+		g.pdf.SetFont("Arial", "", 10)
+		g.pdf.SetTextColor(0, 0, 0)
+		g.pdf.CellFormat(0, 8, "Detail des collisions par joueur:", "", 1, "L", false, 0, "")
+		g.pdf.Ln(3)
+
+		// En-tetes du tableau
+		g.pdf.SetFont("Arial", "B", 10)
+		g.pdf.SetFillColor(236, 240, 241)
+		g.pdf.SetTextColor(52, 73, 94)
+		g.pdf.CellFormat(30, 8, "Joueur", "1", 0, "C", true, 0, "")
+		g.pdf.CellFormat(160, 8, "Collisions avec", "1", 1, "C", true, 0, "")
+
+		// Contenu du tableau
+		g.pdf.SetFont("Arial", "", 9)
+		g.pdf.SetTextColor(0, 0, 0)
+
+		for i, playerSet := range collisions {
+			if len(playerSet) > 0 {
+				// Alternance de couleurs
+				if i%2 == 1 {
+					g.pdf.SetFillColor(248, 249, 250)
+				} else {
+					g.pdf.SetFillColor(255, 255, 255)
+				}
+
+				// Numero du joueur
+				g.pdf.CellFormat(30, 6, fmt.Sprintf("Joueur %d", i+1), "1", 0, "C", true, 0, "")
+
+				// Liste des joueurs en collision
+				var collisionList []string
+				for j := range playerSet {
+					collisionList = append(collisionList, fmt.Sprintf("J%d", j+1))
+				}
+				collisionStr := strings.Join(collisionList, ", ")
+
+				g.pdf.CellFormat(160, 6, collisionStr, "1", 1, "L", true, 0, "")
+			}
+		}
+
+		// Explication
+		g.pdf.Ln(5)
+		g.pdf.SetFont("Arial", "I", 8)
+		g.pdf.SetTextColor(100, 100, 100)
+		g.pdf.MultiCell(0, 4, "Une collision indique que deux joueurs se retrouvent dans la meme equipe plus d'une fois durant le tournoi. L'objectif est de minimiser ces repetitions pour un tournoi equilibre.", "", "", false)
+	}
+
+	// Recommandations
+	g.pdf.Ln(8)
+	g.pdf.SetFont("Arial", "B", 10)
+	g.pdf.SetTextColor(52, 73, 94)
+	g.pdf.CellFormat(0, 6, "Recommandations:", "", 1, "L", false, 0, "")
+
+	g.pdf.SetFont("Arial", "", 9)
+	g.pdf.SetTextColor(0, 0, 0)
+
+	if collisionCount == 0 {
+		g.pdf.MultiCell(0, 5, "- Ce tournoi est optimal, aucune modification necessaire", "", "", false)
+	} else if collisionCount <= 5 {
+		g.pdf.MultiCell(0, 5, "- Niveau de collision acceptable pour un tournoi de cette taille", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Vous pouvez proceder avec cette configuration", "", "", false)
+	} else {
+		g.pdf.MultiCell(0, 5, "- Niveau de collision eleve, considerez regenerer le tournoi", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Verifiez si le nombre de terrains est adapte au nombre de joueurs", "", "", false)
+	}
 }
 
 // addRoundsInTwoColumns ajoute les rondes en 2 colonnes
@@ -180,7 +273,7 @@ func (g *TournamentPDFGenerator) addRoundsInTwoColumns(tournament *tournament.To
 		row := i / 2
 
 		x := startX + float64(col)*columnWidth
-		y := startY + float64(row)*70 // Espacement vertical entre les rangées
+		y := startY + float64(row)*70 // Espacement vertical entre les rangees
 
 		g.pdf.SetXY(x, y)
 		g.addCompactRound(round, i+1, columnWidth)
@@ -192,13 +285,13 @@ func (g *TournamentPDFGenerator) addCompactRound(round tournament.Round, roundNu
 	currentX := g.pdf.GetX()
 	// currentY := g.pdf.GetY()
 
-	// En-tête de la ronde
+	// En-tete de la ronde
 	g.pdf.SetFont("Arial", "B", 12)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.SetFillColor(236, 240, 241)
 	g.pdf.CellFormat(width, 8, fmt.Sprintf("Ronde %d", roundNumber), "", 1, "C", true, 0, "")
 
-	// Retour à la position X de départ pour les lignes suivantes
+	// Retour à la position X de depart pour les lignes suivantes
 	g.pdf.SetX(currentX)
 
 	// Lignes des matchs compactes
@@ -227,7 +320,7 @@ func (g *TournamentPDFGenerator) addCompactRound(round tournament.Round, roundNu
 	}
 }
 
-// formatCompactTeam formate l'affichage compact d'une équipe
+// formatCompactTeam formate l'affichage compact d'une equipe
 func (g *TournamentPDFGenerator) formatCompactTeam(team []tournament.Player) string {
 	var players []string
 	for _, player := range team {
@@ -236,20 +329,18 @@ func (g *TournamentPDFGenerator) formatCompactTeam(team []tournament.Player) str
 	return strings.Join(players, "-")
 }
 
-// addPlayerNumbers ajoute la liste des numéros de joueurs en pied de page
+// addPlayerNumbers ajoute la liste des numeros de joueurs en pied de page
 func (g *TournamentPDFGenerator) addPlayerNumbers(playerCount int) {
 	g.pdf.SetY(280)
 	g.pdf.SetFont("Arial", "I", 8)
 	g.pdf.SetTextColor(100, 100, 100)
 
-	// Générer la liste des joueurs de manière plus compacte
+	// Generer la liste des joueurs de maniere plus compacte
 	var playerNumbers []string
 	for i := 1; i <= playerCount; i++ {
 		playerNumbers = append(playerNumbers, strconv.Itoa(i))
 	}
 
-	playerList := strings.Join(playerNumbers, " - ")
-	g.pdf.CellFormat(0, 5, fmt.Sprintf("Joueurs: %s", playerList), "", 1, "C", false, 0, "")
 }
 
 // SavePDF sauvegarde le PDF
@@ -259,8 +350,8 @@ func (g *TournamentPDFGenerator) SavePDF(filename string) error {
 
 const (
 	MAX_FIELD  = 9
-	NB_ROUNDS  = 4
-	NB_PLAYERS = 18
+	NB_ROUNDS  = 2
+	NB_PLAYERS = 12
 )
 
 func displayColision(col []tournament.PlayerSet) {
@@ -278,19 +369,22 @@ func displayColision(col []tournament.PlayerSet) {
 
 func main() {
 	generator := NewTournamentPDFGenerator()
-	tour := tournament.DrawTournament(NB_PLAYERS, NB_ROUNDS, MAX_FIELD)
-	for len(tour[len(tour)-1]) == 0 {
-		println("Last round not generated, do it again")
-		tour = tournament.DrawTournament(NB_PLAYERS, NB_ROUNDS, MAX_FIELD)
-	}
+	// tour := tournament.DrawTournament(NB_PLAYERS, NB_ROUNDS, MAX_FIELD)
+	tour := tournament.DrawRandomTournament(NB_PLAYERS, NB_ROUNDS, MAX_FIELD)
+
+	// Generer la premiere page avec le tournoi
 	generator.GenerateTournamentPage(&tour, NB_PLAYERS)
+
+	// Generer la seconde page avec les collisions
+	generator.GenerateCollisionPage(&tour, NB_PLAYERS)
+
 	tour.Display()
 	fmt.Printf("Nb Collision : %d\n", tour.CountCollision())
 	displayColision(tour.GetCollision())
 	err := generator.SavePDF("tournoi_petanque_" + strconv.Itoa(NB_PLAYERS) + ".pdf")
 	if err != nil {
-		log.Fatalf("Erreur lors de la génération du PDF: %v", err)
+		log.Fatalf("Erreur lors de la generation du PDF: %v", err)
 	}
 
-	fmt.Printf("PDF généré avec succès: tournoi_petanque_%d.pdf", NB_PLAYERS)
+	fmt.Printf("PDF genere avec succes: tournoi_petanque_%d.pdf", NB_PLAYERS)
 }
