@@ -16,7 +16,7 @@ type RoundState struct {
 }
 
 func (rs RoundState) createRoundUniqEncouterRecur(
-	maxField int, playerEverEncountered tournament.PlayerEncountered,
+	maxField int, playerEverEncountered tournament.PlayersTimeEncountered,
 	bestCollision *int, bestResult *RoundState, depth int,
 ) {
 	// Si on a plus de tirage, on retourne le résultat de collision
@@ -166,7 +166,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 	}
 }
 
-func DrawRoundBranchAndBound(playerEverEncountered tournament.PlayerEncountered, players []int, maxField int) tournament.Round {
+func DrawRoundBranchAndBound(playerEverEncountered tournament.PlayersTimeEncountered, players []int, maxField int) tournament.Round {
 	var res RoundState
 	init := RoundState{playersNotInGames: players, round: make(tournament.Round, 0, maxField)}
 	bestCol := math.MaxInt

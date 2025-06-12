@@ -4,6 +4,8 @@ import "maps"
 
 type Round []Game
 
+const CREATE_NEW_GAME = -1
+
 func (round Round) Clone() Round {
 	cloned := make(Round, len(round))
 	for i, game := range round {
@@ -12,13 +14,13 @@ func (round Round) Clone() Round {
 	return cloned
 }
 
-func (round Round) genEncounteredMatrix() PlayerEncountered {
-	res := make(PlayerEncountered)
+func (round Round) genEncounteredMatrix() PlayersTimeEncountered {
+	res := make(PlayersTimeEncountered)
 	for _, game := range round {
 		gameMatrix := game.genEncounteredMatrix()
 		for player, _ := range gameMatrix {
 			if _, exist := res[player]; !exist {
-				res[player] = PlayerSet{}
+				res[player] = make(map[Player]int)
 			}
 			maps.Copy(res[player], gameMatrix[player])
 		}
@@ -26,12 +28,41 @@ func (round Round) genEncounteredMatrix() PlayerEncountered {
 	return res
 }
 
-func (round Round) CountCollision(matchPlayed PlayerEncountered) int {
+func (round Round) CountCollision(matchPlayed PlayersTimeEncountered) int {
 	res := 0
 	for _, game := range round {
 		res += game.CountCollision(matchPlayed)
 	}
 	return res
+}
+
+func (round *Round) PlayerCanBePlacedInGamesIndex(totalPlayer int, maxField int) []int {
+	if len(*round) == 0 {
+		return []int{CREATE_NEW_GAME}
+	}
+
+	// On regarde quelles sont les parties libre en doublette et en triplette
+	freePlaceInDoublette := []int{}
+	freePlaceInTriplette := []int{}
+	for idxGame, game := range *round {
+		if !game.IsFull() {
+			freePlaceInTriplette = append(freePlaceInTriplette, idxGame)
+		}
+		if !game.IsFullForDoublette() {
+			freePlaceInDoublette = append(freePlaceInDoublette, idxGame)
+		}
+	}
+	if len(*round) < totalPlayer/4 && len(*round) < maxField {
+		freePlaceInDoublette = append(freePlaceInDoublette, CREATE_NEW_GAME)
+		freePlaceInTriplette = append(freePlaceInTriplette, CREATE_NEW_GAME)
+	}
+	if len(freePlaceInDoublette) > 0 {
+		return freePlaceInDoublette
+	} else if len(freePlaceInTriplette) > 0 {
+		return freePlaceInTriplette
+	} else {
+		panic("player cant be placed !")
+	}
 }
 
 func (round *Round) PlacePlayerLazy(p Player, remainPlayers int, maxField int) {
@@ -74,4 +105,12 @@ func (round *Round) PlacePlayerLazy(p Player, remainPlayers int, maxField int) {
 
 	// Dans les autres cas le joueur peut être placé sur la partie actuelle
 	lastGame.PlacePlayerInGame(p)
+}
+
+func (round Round) CountPlacedPlayer() int {
+	res := 0
+	for _, game := range round {
+		res += game.CountPlacedPlayer()
+	}
+	return res
 }

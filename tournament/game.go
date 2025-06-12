@@ -40,73 +40,77 @@ func (game *Game) PlacePlayerInGame(p Player) error {
 	return nil
 }
 
-func (game Game) genEncounteredMatrix() PlayerEncountered {
-	res := make(PlayerEncountered)
+func (game Game) genEncounteredMatrix() PlayersTimeEncountered {
+	res := make(PlayersTimeEncountered)
 	for _, player := range game.Team1 {
-		res[player] = make(PlayerSet)
+		res[player] = make(map[Player]int)
 		for _, opponent := range game.Team1 {
 			if player != opponent {
-				res[player][opponent] = struct{}{}
+				res[player][opponent] = 1
 			}
 		}
 		for _, opponent := range game.Team2 {
-			res[player][opponent] = struct{}{}
+			res[player][opponent] = 1
 		}
 	}
 	for _, player := range game.Team2 {
-		res[player] = make(PlayerSet)
+		res[player] = make(map[Player]int)
 		for _, opponent := range game.Team1 {
-			res[player][opponent] = struct{}{}
+			res[player][opponent] = 1
 		}
 		for _, opponent := range game.Team2 {
 			if player != opponent {
-				res[player][opponent] = struct{}{}
+				res[player][opponent] = 1
 			}
 		}
 	}
 	return res
 }
 
-func (game Game) CollisionFoundIfIplaceThisPlayer(p Player, matchPlayed PlayerEncountered) int {
+func (game Game) CollisionFoundIfIplaceThisPlayer(p Player, matchPlayed PlayersTimeEncountered) int {
 	res := 0
 	for _, opponent := range game.Team1 {
-		if _, exist := matchPlayed[p][opponent]; exist {
-			res++
+		if val, exist := matchPlayed[p][opponent]; exist {
+			res += val
 		}
 	}
 	for _, opponent := range game.Team2 {
-		if _, exist := matchPlayed[p][opponent]; exist {
-			res++
+		if val, exist := matchPlayed[p][opponent]; exist {
+			res += val
 		}
 	}
 	return res
 }
 
-func (game Game) CountCollision(matchPlayed PlayerEncountered) int {
+func (game Game) CountCollision(matchPlayed PlayersTimeEncountered) int {
 	res := 0
 	for _, player := range game.Team1 {
 		for _, opponent := range game.Team1 {
-			if _, exist := matchPlayed[player][opponent]; exist && player != opponent {
-				res++
+			if val, exist := matchPlayed[player][opponent]; exist && player != opponent {
+				res += val
 			}
 		}
 		for _, opponent := range game.Team2 {
-			if _, exist := matchPlayed[player][opponent]; exist {
-				res++
+			if val, exist := matchPlayed[player][opponent]; exist {
+				res += val
 			}
 		}
 	}
 	for _, player := range game.Team2 {
 		for _, opponent := range game.Team1 {
-			if _, exist := matchPlayed[player][opponent]; exist {
-				res++
+			if val, exist := matchPlayed[player][opponent]; exist {
+				res += val
 			}
 		}
 		for _, opponent := range game.Team2 {
-			if _, exist := matchPlayed[player][opponent]; exist && player != opponent {
-				res++
+			if val, exist := matchPlayed[player][opponent]; exist && player != opponent {
+				res += val
 			}
 		}
 	}
 	return res
+}
+
+func (game Game) CountPlacedPlayer() int {
+	return len(game.Team1) + len(game.Team2)
 }

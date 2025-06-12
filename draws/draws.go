@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"petanque-draw/tournament"
+	"petanque-draw/utils"
 	"petanque-draw/utils/intset"
 	"slices"
 )
@@ -23,6 +24,7 @@ type TounamentDrawOpts struct {
 	MAX_FIELDS       int
 	NB_PLAYER        int
 	NB_ROUNDS        int
+	VERBOSE          bool
 }
 
 func NewDefaultDrawOpts() TounamentDrawOpts {
@@ -33,13 +35,14 @@ func NewDefaultDrawOpts() TounamentDrawOpts {
 		MAX_FIELDS:       4,
 		NB_PLAYER:        16,
 		NB_ROUNDS:        4,
+		VERBOSE:          false,
 	}
 }
 
 func drawFollowingRound(nbPlayer int, maxField int) tournament.Round {
 	var round tournament.Round
 	for i := range nbPlayer {
-		round.PlacePlayerLazy(tournament.Player(i), nbPlayer, maxField)
+		round.PlacePlayerLazy(tournament.Player(i), nbPlayer-i, maxField)
 	}
 	return round
 }
@@ -57,7 +60,9 @@ func drawRandomRound(nbPlayer int, maxField int) tournament.Round {
 func DrawTournament(opts TounamentDrawOpts) tournament.Tournament {
 	tournamentRes := make(tournament.Tournament, 0, opts.NB_ROUNDS)
 	// Add first round
-	fmt.Printf("-----------Generate-Round-%d---------\n", 1)
+	if opts.VERBOSE {
+		fmt.Printf("-----------Generate-Round-%d---------\n", 1)
+	}
 	if opts.FOLLOWING_PLAYER {
 		tournamentRes = append(tournamentRes, drawFollowingRound(opts.NB_PLAYER, opts.MAX_FIELDS))
 	} else {
@@ -65,14 +70,16 @@ func DrawTournament(opts TounamentDrawOpts) tournament.Tournament {
 	}
 
 	for roundIndex := range opts.NB_ROUNDS - 1 {
-		fmt.Printf("-----------Generate-Round-%d---------\n", roundIndex+2)
-
+		if opts.VERBOSE {
+			fmt.Printf("-----------Generate-Round-%d---------\n", roundIndex+2)
+		}
 		// Tirage des joueurs
-		intPlayerVector := make([]int, 0, opts.NB_PLAYER)
+		intPlayerVector := make([]int, opts.NB_PLAYER)
 		if opts.FOLLOWING_PLAYER {
 			for i := range opts.NB_PLAYER {
 				intPlayerVector[i] = i
 			}
+			intPlayerVector = utils.LeftRotation(intPlayerVector, roundIndex)
 		} else {
 			intPlayerVector = slices.Collect(maps.Keys(intset.CreateIntSet(opts.NB_PLAYER)))
 		}
@@ -85,6 +92,8 @@ func DrawTournament(opts TounamentDrawOpts) tournament.Tournament {
 		switch opts.ALGO_TYPE {
 		case ALGO_BRANCH_AND_BOUND:
 			round = DrawRoundBranchAndBound(encounterMatrix, intPlayerVector, opts.MAX_FIELDS)
+		case ALGO_GREEDY:
+			round = DrawRoundGreed(encounterMatrix, intPlayerVector, opts.MAX_FIELDS)
 		default:
 			if opts.FOLLOWING_PLAYER {
 				round = drawFollowingRound(opts.NB_PLAYER, opts.MAX_FIELDS)

@@ -82,3 +82,24 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 	}
 	return tournament
 }
+
+func DrawTournamentBruteForce(opts TounamentDrawOpts) tournament.Tournament {
+	var bTournament tournament.Tournament
+	bCollision := math.MaxInt
+	for i := range opts.MAX_ITERATION {
+		tour := DrawTournament(opts)
+		col := tour.CountCollision()
+		if bCollision > col {
+			bTournament = tour
+			bCollision = col
+			fmt.Printf("Found better tournament with %d collisions\n", bCollision)
+			if col == 0 {
+				return tour
+			}
+		}
+		if i%(opts.MAX_ITERATION/100) == 0 {
+			fmt.Printf(".")
+		}
+	}
+	return bTournament
+}

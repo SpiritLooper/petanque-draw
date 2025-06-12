@@ -8,7 +8,7 @@ import (
 type Tournament []Round
 
 type PlayerSet map[Player]struct{}
-type PlayerEncountered map[Player]PlayerSet
+type PlayersTimeEncountered map[Player]map[Player]int
 
 func (t *Tournament) Display() {
 	for i, rounds := range *t {
@@ -28,13 +28,13 @@ func (t *Tournament) Display() {
 	}
 }
 
-func (tournament Tournament) GenEncounteredMatrix() PlayerEncountered {
-	res := make(PlayerEncountered)
+func (tournament Tournament) GenEncounteredMatrix() PlayersTimeEncountered {
+	res := make(PlayersTimeEncountered)
 	for _, round := range tournament {
 		roundMatrix := round.genEncounteredMatrix()
 		for player, _ := range roundMatrix {
 			if _, exist := res[player]; !exist {
-				res[player] = PlayerSet{}
+				res[player] = make(map[Player]int)
 			}
 			maps.Copy(res[player], roundMatrix[player])
 		}
@@ -42,7 +42,7 @@ func (tournament Tournament) GenEncounteredMatrix() PlayerEncountered {
 	return res
 }
 
-func (tournament Tournament) countCollision(matchPlayed PlayerEncountered) int {
+func (tournament Tournament) countCollision(matchPlayed PlayersTimeEncountered) int {
 	res := 0
 	for _, round := range tournament {
 		res += round.CountCollision(matchPlayed)
