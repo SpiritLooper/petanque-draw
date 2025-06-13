@@ -59,6 +59,15 @@ func (round *Round) PlayerCanBePlacedInGamesIndex(totalPlayer int, maxField int)
 	if len(freePlaceInDoublette) > 0 {
 		return freePlaceInDoublette
 	} else if len(freePlaceInTriplette) > 0 {
+		restrictTriplette := []int{}
+		for _, i := range freePlaceInTriplette {
+			if (*round)[i].CountPlacedPlayer() == 5 {
+				restrictTriplette = append(restrictTriplette, i)
+			}
+		}
+		if (totalPlayer-round.CountPlacedPlayer())%2 == 1 && len(restrictTriplette) > 0 {
+			return restrictTriplette
+		}
 		return freePlaceInTriplette
 	} else {
 		panic("player cant be placed !")

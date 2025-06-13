@@ -22,8 +22,8 @@ func displayColision(col []tournament.PlayerSet) {
 	}
 }
 
-const MIN_PLAYER_TO_GEN = 23
-const MAX_PLAYER_TO_GEN = 23
+const MIN_PLAYER_TO_GEN = 26
+const MAX_PLAYER_TO_GEN = 26
 
 func main() {
 	opts := draws.NewDefaultDrawOpts()
@@ -31,6 +31,7 @@ func main() {
 	opts.MAX_FIELDS = 9
 	opts.NB_ROUNDS = 4
 	opts.FOLLOWING_PLAYER = false
+	opts.MAX_ITERATION = 200_000
 
 	for i := MIN_PLAYER_TO_GEN; i <= MAX_PLAYER_TO_GEN; i++ {
 		generator := pdfgen.NewTournamentPDFGenerator()
