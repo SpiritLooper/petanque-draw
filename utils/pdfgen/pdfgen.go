@@ -16,7 +16,8 @@ import (
 func findSystemFont(fontName string) (string, bool) {
 	// Chemins typiques pour les polices sur NixOS
 	fontPaths := []string{
-		"/run/current-system/sw/share/fonts",
+		"fonts/Roboto",
+		"/run/current-system/sw/share/X11/fonts",
 		"/etc/profiles/per-user/" + os.Getenv("USER") + "/share/fonts",
 		os.Getenv("HOME") + "/.local/share/fonts",
 		os.Getenv("HOME") + "/.fonts",
@@ -63,7 +64,7 @@ func findSystemFont(fontName string) (string, bool) {
 func setupFonts(pdf *gofpdf.Fpdf) {
 	// Ordre de preference des polices
 	fontPreferences := []string{
-		"Inter", "Roboto", "Ubuntu", "DejaVu Sans", "Liberation Sans",
+		"Roboto", "Roboto", "Ubuntu", "DejaVu Sans", "Roboto Sans",
 		"Noto Sans", "Source Sans Pro", "Open Sans", "Lato", "Nunito",
 	}
 
@@ -149,23 +150,21 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 	g.pdf.AddPage()
 
 	// En-tete principal
-	g.pdf.SetFont("Arial", "B", 20)
+	g.pdf.SetFont("Roboto", "B", 20)
 	g.pdf.SetTextColor(44, 62, 80)
-	g.pdf.CellFormat(0, 15, fmt.Sprintf("Tournoi de Petanque - %d Joueurs", playerCount), "", 1, "C", false, 0, "")
+	g.pdf.CellFormat(0, 15, fmt.Sprintf("Tournoi de Pétanque - %d Joueurs", playerCount), "", 1, "C", false, 0, "")
 	g.pdf.Ln(5)
 
 	// Sous-titre compact
-	g.pdf.SetFont("Arial", "I", 10)
+	g.pdf.SetFont("Roboto", "I", 10)
 	g.pdf.SetTextColor(100, 100, 100)
 	totalGames := len(*tournament) * len((*tournament)[0])
-	g.pdf.CellFormat(0, 6, fmt.Sprintf("4 rondes - %d parties - %d terrains max", totalGames, len((*tournament)[0])), "", 1, "C", false, 0, "")
+	g.pdf.CellFormat(0, 6, fmt.Sprintf("4 tirages - %d parties - %d terrains max", totalGames, len((*tournament)[0])), "", 1, "C", false, 0, "")
 	g.pdf.Ln(8)
 
-	// Generation des rondes en 2 colonnes
+	// Generation des tours en 2 colonnes
 	g.addRoundsInTwoColumns(tournament)
 
-	// Pied de page avec numeros des joueurs
-	g.addPlayerNumbers(playerCount)
 }
 
 // GenerateCollisionPage genere une page avec les collisions
@@ -173,14 +172,14 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 	g.pdf.AddPage()
 
 	// En-tete principal
-	g.pdf.SetFont("Arial", "B", 20)
+	g.pdf.SetFont("Roboto", "B", 20)
 	g.pdf.SetTextColor(44, 62, 80)
 	g.pdf.CellFormat(0, 15, "Analyse des Collisions", "", 1, "C", false, 0, "")
 	g.pdf.Ln(5)
 
 	// Statistiques generales
 	collisionCount := tournament.CountCollision()
-	g.pdf.SetFont("Arial", "B", 12)
+	g.pdf.SetFont("Roboto", "B", 12)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.CellFormat(0, 8, fmt.Sprintf("Nombre total de collisions: %d", collisionCount), "", 1, "L", false, 0, "")
 	g.pdf.Ln(5)
@@ -190,25 +189,25 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 
 	if collisionCount == 0 {
 		// Aucune collision
-		g.pdf.SetFont("Arial", "I", 12)
+		g.pdf.SetFont("Roboto", "I", 12)
 		g.pdf.SetTextColor(39, 174, 96)
-		g.pdf.CellFormat(0, 10, "Aucune collision detectee ! Tournoi parfaitement equilibre.", "", 1, "C", false, 0, "")
+		g.pdf.CellFormat(0, 10, "Aucune collision détectée ! Tournoi parfaitement équilibré.", "", 1, "C", false, 0, "")
 	} else {
 		// Affichage des collisions
-		g.pdf.SetFont("Arial", "", 10)
+		g.pdf.SetFont("Roboto", "", 10)
 		g.pdf.SetTextColor(0, 0, 0)
-		g.pdf.CellFormat(0, 8, "Detail des collisions par joueur:", "", 1, "L", false, 0, "")
+		g.pdf.CellFormat(0, 8, "Détail des collisions par joueur:", "", 1, "L", false, 0, "")
 		g.pdf.Ln(3)
 
 		// En-tetes du tableau
-		g.pdf.SetFont("Arial", "B", 10)
+		g.pdf.SetFont("Roboto", "B", 10)
 		g.pdf.SetFillColor(236, 240, 241)
 		g.pdf.SetTextColor(52, 73, 94)
 		g.pdf.CellFormat(30, 8, "Joueur", "1", 0, "C", true, 0, "")
 		g.pdf.CellFormat(160, 8, "Collisions avec", "1", 1, "C", true, 0, "")
 
 		// Contenu du tableau
-		g.pdf.SetFont("Arial", "", 9)
+		g.pdf.SetFont("Roboto", "", 9)
 		g.pdf.SetTextColor(0, 0, 0)
 
 		for i, playerSet := range collisions {
@@ -236,43 +235,45 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 
 		// Explication
 		g.pdf.Ln(5)
-		g.pdf.SetFont("Arial", "I", 8)
+		g.pdf.SetFont("Roboto", "I", 8)
 		g.pdf.SetTextColor(100, 100, 100)
-		g.pdf.MultiCell(0, 4, "Une collision indique que deux joueurs se retrouvent dans la meme equipe plus d'une fois durant le tournoi. L'objectif est de minimiser ces repetitions pour un tournoi equilibre.", "", "", false)
+		g.pdf.MultiCell(0, 4, "Une collision indique que deux joueurs se retrouvent dans la même équipe plus d'une fois durant le tournoi. L'objectif est de minimiser ces répétitions pour un tournoi équilibré.", "", "", false)
 	}
 
 	// Recommandations
 	g.pdf.Ln(8)
-	g.pdf.SetFont("Arial", "B", 10)
+	g.pdf.SetFont("Roboto", "B", 10)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.CellFormat(0, 6, "Recommandations:", "", 1, "L", false, 0, "")
 
-	g.pdf.SetFont("Arial", "", 9)
+	g.pdf.SetFont("Roboto", "", 9)
 	g.pdf.SetTextColor(0, 0, 0)
 
 	if collisionCount == 0 {
-		g.pdf.MultiCell(0, 5, "- Ce tournoi est optimal, aucune modification necessaire", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Ce tournoi est optimal, aucune modification nécessaire", "", "", false)
 	} else if collisionCount <= 5 {
 		g.pdf.MultiCell(0, 5, "- Niveau de collision acceptable pour un tournoi de cette taille", "", "", false)
-		g.pdf.MultiCell(0, 5, "- Vous pouvez proceder avec cette configuration", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Vous pouvez procéder avec cette configuration", "", "", false)
 	} else {
-		g.pdf.MultiCell(0, 5, "- Niveau de collision eleve, considerez regenerer le tournoi", "", "", false)
-		g.pdf.MultiCell(0, 5, "- Verifiez si le nombre de terrains est adapte au nombre de joueurs", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Niveau de collision élevé, considérez regénérer le tournoi", "", "", false)
+		g.pdf.MultiCell(0, 5, "- Vérifiez si le nombre de terrains est adapte au nombre de joueurs", "", "", false)
 	}
 }
 
-// addRoundsInTwoColumns ajoute les rondes en 2 colonnes
+// addRoundsInTwoColumns ajoute les tours en 2 colonnes
 func (g *TournamentPDFGenerator) addRoundsInTwoColumns(tournament *tournament.Tournament) {
 	startX := 10.0
 	startY := g.pdf.GetY()
-	columnWidth := 95.0
+	Xmarge := startX
+	width, _ := g.pdf.GetPageSize()
+	columnWidth := (width - 3.0*Xmarge) / 2.0
 
 	for i, round := range *tournament {
 		// Calculer la position
 		col := i % 2
 		row := i / 2
 
-		x := startX + float64(col)*columnWidth
+		x := Xmarge*float64(col+1) + float64(col)*columnWidth
 		y := startY + float64(row)*70 // Espacement vertical entre les rangees
 
 		g.pdf.SetXY(x, y)
@@ -285,62 +286,53 @@ func (g *TournamentPDFGenerator) addCompactRound(round tournament.Round, roundNu
 	currentX := g.pdf.GetX()
 	// currentY := g.pdf.GetY()
 
+	cellHeight := 6.0 * 2
+
 	// En-tete de la ronde
-	g.pdf.SetFont("Arial", "B", 12)
+	g.pdf.SetFont("Roboto", "B", 12)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.SetFillColor(236, 240, 241)
-	g.pdf.CellFormat(width, 8, fmt.Sprintf("Ronde %d", roundNumber), "", 1, "C", true, 0, "")
+	g.pdf.CellFormat(width+0.4, 8, fmt.Sprintf("Parties n°%d", roundNumber), "1", 1, "C", true, 0, "")
+	g.pdf.CellFormat(width+0.4, 0.2, "", "1", 1, "C", true, 0, "")
 
 	// Retour à la position X de depart pour les lignes suivantes
 	g.pdf.SetX(currentX)
 
 	// Lignes des matchs compactes
-	g.pdf.SetFont("Arial", "", 9)
+	g.pdf.SetFont("Roboto", "", cellHeight)
 	g.pdf.SetTextColor(0, 0, 0)
 
 	for gameIndex, game := range round {
 		g.pdf.SetX(currentX)
 
+		// Terrain (plus petit)
+		g.pdf.SetTextColor(60, 60, 60)
+		g.pdf.SetFillColor(236, 240, 241)
+		g.pdf.CellFormat(12, cellHeight, fmt.Sprintf("T%d", gameIndex+1), "1", 0, "C", true, 0, "")
+		g.pdf.CellFormat(0.2, cellHeight, "", "1", 0, "C", true, 0, "")
+
 		// Alternance de couleurs
 		if gameIndex%2 == 1 {
-			g.pdf.SetFillColor(248, 249, 250)
+			g.pdf.SetFillColor(243, 244, 245)
 		} else {
 			g.pdf.SetFillColor(255, 255, 255)
 		}
 
-		// Terrain (plus petit)
-		g.pdf.CellFormat(12, 6, fmt.Sprintf("T%d", gameIndex+1), "1", 0, "C", true, 0, "")
-
+		g.pdf.SetTextColor(200, 0, 0)
 		// Match complet sur le reste de la largeur
-		team1Str := g.formatCompactTeam(game.Team1)
-		team2Str := g.formatCompactTeam(game.Team2)
-		matchStr := fmt.Sprintf("%s vs %s", team1Str, team2Str)
+		team1Width := (width - 12) / 2 / float64(len(game.Team1))
+		for _, player := range game.Team1 {
+			g.pdf.CellFormat(team1Width, cellHeight, strconv.Itoa(int(player)+1), "1", 0, "C", true, 0, "")
+		}
+		g.pdf.CellFormat(0.2, cellHeight, "", "1", 0, "C", true, 0, "")
 
-		g.pdf.CellFormat(width-12, 6, matchStr, "1", 1, "C", true, 0, "")
+		g.pdf.SetTextColor(0, 0, 0)
+		team2Width := (width - 12) / 2 / float64(len(game.Team2))
+		for _, player := range game.Team2 {
+			g.pdf.CellFormat(team2Width, cellHeight, strconv.Itoa(int(player)+1), "1", 0, "C", true, 0, "")
+		}
+		g.pdf.SetY(g.pdf.GetY() + cellHeight)
 	}
-}
-
-// formatCompactTeam formate l'affichage compact d'une equipe
-func (g *TournamentPDFGenerator) formatCompactTeam(team []tournament.Player) string {
-	var players []string
-	for _, player := range team {
-		players = append(players, strconv.Itoa(int(player+1)))
-	}
-	return strings.Join(players, "-")
-}
-
-// addPlayerNumbers ajoute la liste des numeros de joueurs en pied de page
-func (g *TournamentPDFGenerator) addPlayerNumbers(playerCount int) {
-	g.pdf.SetY(280)
-	g.pdf.SetFont("Arial", "I", 8)
-	g.pdf.SetTextColor(100, 100, 100)
-
-	// Generer la liste des joueurs de maniere plus compacte
-	var playerNumbers []string
-	for i := 1; i <= playerCount; i++ {
-		playerNumbers = append(playerNumbers, strconv.Itoa(i))
-	}
-
 }
 
 // SavePDF sauvegarde le PDF

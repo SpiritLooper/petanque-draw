@@ -54,7 +54,7 @@ func drawRandomRound(nbPlayer int, maxField int) tournament.Round {
 		randInt, _ := setInt.RandomPop()
 		round.PlacePlayerLazy(tournament.Player(randInt), setInt.Count()+1, maxField)
 	}
-	return round
+	return round.ReArranged()
 }
 
 func DrawTournament(opts TounamentDrawOpts) tournament.Tournament {

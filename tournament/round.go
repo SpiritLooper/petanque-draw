@@ -18,7 +18,7 @@ func (round Round) genEncounteredMatrix() PlayersTimeEncountered {
 	res := make(PlayersTimeEncountered)
 	for _, game := range round {
 		gameMatrix := game.genEncounteredMatrix()
-		for player, _ := range gameMatrix {
+		for player := range gameMatrix {
 			if _, exist := res[player]; !exist {
 				res[player] = make(map[Player]int)
 			}
@@ -122,4 +122,30 @@ func (round Round) CountPlacedPlayer() int {
 		res += game.CountPlacedPlayer()
 	}
 	return res
+}
+
+func (round Round) ReArranged() Round {
+	threeVsThree := make(Round, 0)
+	threeVsTwo := make(Round, 0)
+	twoVsTwo := make(Round, 0)
+	errors := make(Round, 0)
+	for _, game := range round {
+		switch len(game.Team1) + len(game.Team2) {
+		case 4:
+			twoVsTwo = append(twoVsTwo, game)
+		case 5:
+			res := game.Clone()
+			if len(game.Team1) < len(game.Team2) {
+				tmp := game.Team1
+				res.Team1 = res.Team2
+				res.Team2 = tmp
+			}
+			threeVsTwo = append(threeVsTwo, res)
+		case 6:
+			threeVsThree = append(threeVsThree, game)
+		default:
+			errors = append(errors, game)
+		}
+	}
+	return append(threeVsThree, append(threeVsTwo, append(twoVsTwo, errors...)...)...)
 }

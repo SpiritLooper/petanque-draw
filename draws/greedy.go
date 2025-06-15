@@ -64,5 +64,5 @@ func DrawRoundGreed(playerEverEncountered tournament.PlayersTimeEncountered, pla
 	for _, iPlayer := range players {
 		round = placePlayerInRoundGreedy(tournament.Player(iPlayer), playerEverEncountered, len(players), maxField, round)
 	}
-	return round
+	return round.ReArranged()
 }

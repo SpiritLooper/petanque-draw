@@ -171,5 +171,5 @@ func DrawRoundBranchAndBound(playerEverEncountered tournament.PlayersTimeEncount
 	init := RoundState{playersNotInGames: players, round: make(tournament.Round, 0, maxField)}
 	bestCol := math.MaxInt
 	init.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &bestCol, &res, 0)
-	return res.round
+	return res.round.ReArranged()
 }
