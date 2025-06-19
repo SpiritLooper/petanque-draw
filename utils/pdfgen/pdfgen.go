@@ -12,6 +12,8 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
+const cellHeight = 6.0 * 2
+
 // findSystemFont cherche une police sur le systeme NixOS
 func findSystemFont(fontName string) (string, bool) {
 	// Chemins typiques pour les polices sur NixOS
@@ -64,7 +66,7 @@ func findSystemFont(fontName string) (string, bool) {
 func setupFonts(pdf *gofpdf.Fpdf) {
 	// Ordre de preference des polices
 	fontPreferences := []string{
-		"Roboto", "Roboto", "Ubuntu", "DejaVu Sans", "Roboto Sans",
+		"Roboto", "Ubuntu", "DejaVu Sans", "Roboto Sans",
 		"Noto Sans", "Source Sans Pro", "Open Sans", "Lato", "Nunito",
 	}
 
@@ -111,7 +113,7 @@ func setupFonts(pdf *gofpdf.Fpdf) {
 		// Verifier pour les variantes en gras
 		for _, variant := range boldVariants {
 			if strings.Contains(fileName, variant) && !strings.Contains(fileName, "italic") {
-				pdf.AddUTF8Font(selectedFont, "B", path)
+				pdf.AddUTF8Font(selectedFont, "", path)
 				log.Printf("Police gras ajoutee: %s", path)
 				return nil
 			}
@@ -150,7 +152,7 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 	g.pdf.AddPage()
 
 	// En-tete principal
-	g.pdf.SetFont("Roboto", "B", 20)
+	g.pdf.SetFont("Roboto", "", 20)
 	g.pdf.SetTextColor(44, 62, 80)
 	g.pdf.CellFormat(0, 15, fmt.Sprintf("Tournoi de Pétanque - %d Joueurs", playerCount), "", 1, "C", false, 0, "")
 	g.pdf.Ln(5)
@@ -172,14 +174,14 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 	g.pdf.AddPage()
 
 	// En-tete principal
-	g.pdf.SetFont("Roboto", "B", 20)
+	g.pdf.SetFont("Roboto", "", 20)
 	g.pdf.SetTextColor(44, 62, 80)
 	g.pdf.CellFormat(0, 15, "Analyse des Collisions", "", 1, "C", false, 0, "")
 	g.pdf.Ln(5)
 
 	// Statistiques generales
 	collisionCount := tournament.CountCollision()
-	g.pdf.SetFont("Roboto", "B", 12)
+	g.pdf.SetFont("Roboto", "", 12)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.CellFormat(0, 8, fmt.Sprintf("Nombre total de collisions: %d", collisionCount), "", 1, "L", false, 0, "")
 	g.pdf.Ln(5)
@@ -200,7 +202,7 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 		g.pdf.Ln(3)
 
 		// En-tetes du tableau
-		g.pdf.SetFont("Roboto", "B", 10)
+		g.pdf.SetFont("Roboto", "", 10)
 		g.pdf.SetFillColor(236, 240, 241)
 		g.pdf.SetTextColor(52, 73, 94)
 		g.pdf.CellFormat(30, 8, "Joueur", "1", 0, "C", true, 0, "")
@@ -242,7 +244,7 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 
 	// Recommandations
 	g.pdf.Ln(8)
-	g.pdf.SetFont("Roboto", "B", 10)
+	g.pdf.SetFont("Roboto", "", 10)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.CellFormat(0, 6, "Recommandations:", "", 1, "L", false, 0, "")
 
@@ -274,7 +276,7 @@ func (g *TournamentPDFGenerator) addRoundsInTwoColumns(tournament *tournament.To
 		row := i / 2
 
 		x := Xmarge*float64(col+1) + float64(col)*columnWidth
-		y := startY + float64(row)*70 // Espacement vertical entre les rangees
+		y := startY + float64(row)*(cellHeight*float64(len((*tournament)[0]))+8.0+startX) // Espacement vertical entre les rangees
 
 		g.pdf.SetXY(x, y)
 		g.addCompactRound(round, i+1, columnWidth)
@@ -286,10 +288,8 @@ func (g *TournamentPDFGenerator) addCompactRound(round tournament.Round, roundNu
 	currentX := g.pdf.GetX()
 	// currentY := g.pdf.GetY()
 
-	cellHeight := 6.0 * 2
-
 	// En-tete de la ronde
-	g.pdf.SetFont("Roboto", "B", 12)
+	g.pdf.SetFont("Roboto", "", 12)
 	g.pdf.SetTextColor(52, 73, 94)
 	g.pdf.SetFillColor(236, 240, 241)
 	g.pdf.CellFormat(width+0.4, 8, fmt.Sprintf("Parties n°%d", roundNumber), "1", 1, "C", true, 0, "")
