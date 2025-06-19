@@ -12,7 +12,8 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
-const cellHeight = 6.0 * 2
+const cellHeight = 5.0 * 2
+const margin = 10.0
 
 // findSystemFont cherche une police sur le systeme NixOS
 func findSystemFont(fontName string) (string, bool) {
@@ -167,6 +168,72 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 	// Generation des tours en 2 colonnes
 	g.addRoundsInTwoColumns(tournament)
 
+	// Collisions footer
+	g.generateCollisionFooter(tournament)
+}
+
+func (g *TournamentPDFGenerator) generateCollisionFooter(tour *tournament.Tournament) {
+	cellWidth := 10.0
+
+	// En-tete principal
+	g.pdf.SetFont("Roboto", "", cellWidth*1.4)
+	g.pdf.SetTextColor(60, 60, 60)
+	g.pdf.Ln(margin)
+
+	g.pdf.CellFormat(2*cellWidth, cellWidth, "", "", 0, "C", false, 0, "")
+	for i := range len(*tour) {
+		g.pdf.CellFormat(cellWidth, cellWidth, fmt.Sprintf("%d", i+1), "", 0, "C", false, 0, "")
+	}
+	g.pdf.Ln(cellWidth)
+	everDo := make([][]bool, (*tour)[0].CountPlacedPlayer())
+	for i := range (*tour)[0].CountPlacedPlayer() {
+		everDo[i] = make([]bool, (*tour)[0].CountPlacedPlayer())
+		for j := range (*tour)[0].CountPlacedPlayer() {
+			everDo[i][j] = false
+		}
+	}
+	collisions := tour.GetCollision()
+	for i, playerSet := range collisions {
+		if len(playerSet) > 0 {
+			for j := range playerSet {
+				if _, exist := collisions[i][j]; exist && !everDo[tournament.Player(i)][j] && !everDo[j][tournament.Player(i)] {
+					everDo[tournament.Player(i)][j] = true
+					everDo[j][tournament.Player(i)] = true
+					g.pdf.SetTextColor(10, 10, 10)
+					g.pdf.CellFormat(cellWidth*2, cellWidth, fmt.Sprintf("%d-%d", i+1, j+1), "", 0, "C", false, 0, "")
+					// On parcours les parties trouvés avec la collisions
+					for _, round := range *tour {
+						found := false
+						for _, game := range round {
+							if game.IsPlayerPlayWith(tournament.Player(i), j) {
+								found = true
+								g.pdf.SetTextColor(20, 200, 80)
+								if game.IsContainsTriplette() {
+									g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
+								} else {
+									g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
+								}
+								break
+							} else if game.IsPlayerPlayAgainst(tournament.Player(i), j) {
+								found = true
+								g.pdf.SetTextColor(255, 40, 40)
+								if game.IsContainsTriplette() {
+									g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
+								} else {
+									g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
+								}
+								break
+							}
+						}
+						if !found {
+							g.pdf.CellFormat(cellWidth, cellWidth, "", "1", 0, "C", false, 0, "")
+						}
+					}
+					g.pdf.Ln(cellWidth)
+				}
+			}
+		}
+	}
 }
 
 // GenerateCollisionPage genere une page avec les collisions
@@ -264,7 +331,7 @@ func (g *TournamentPDFGenerator) GenerateCollisionPage(tournament *tournament.To
 
 // addRoundsInTwoColumns ajoute les tours en 2 colonnes
 func (g *TournamentPDFGenerator) addRoundsInTwoColumns(tournament *tournament.Tournament) {
-	startX := 10.0
+	startX := margin
 	startY := g.pdf.GetY()
 	Xmarge := startX
 	width, _ := g.pdf.GetPageSize()
@@ -276,7 +343,7 @@ func (g *TournamentPDFGenerator) addRoundsInTwoColumns(tournament *tournament.To
 		row := i / 2
 
 		x := Xmarge*float64(col+1) + float64(col)*columnWidth
-		y := startY + float64(row)*(cellHeight*float64(len((*tournament)[0]))+8.0+startX) // Espacement vertical entre les rangees
+		y := startY + float64(row)*(cellHeight*float64(len((*tournament)[0]))+8.0+margin) // Espacement vertical entre les rangees
 
 		g.pdf.SetXY(x, y)
 		g.addCompactRound(round, i+1, columnWidth)
@@ -299,7 +366,7 @@ func (g *TournamentPDFGenerator) addCompactRound(round tournament.Round, roundNu
 	g.pdf.SetX(currentX)
 
 	// Lignes des matchs compactes
-	g.pdf.SetFont("Roboto", "", cellHeight)
+	g.pdf.SetFont("Roboto", "", cellHeight*1.8)
 	g.pdf.SetTextColor(0, 0, 0)
 
 	for gameIndex, game := range round {

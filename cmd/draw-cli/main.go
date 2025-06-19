@@ -22,7 +22,7 @@ func displayColision(col []tournament.PlayerSet) {
 	}
 }
 
-const MIN_PLAYER_TO_GEN = 19
+const MIN_PLAYER_TO_GEN = 23
 const MAX_PLAYER_TO_GEN = MIN_PLAYER_TO_GEN
 
 func main() {
@@ -39,8 +39,8 @@ func main() {
 		opts.NB_PLAYER = i
 
 		fmt.Printf("=================GENERATE=%d=PLAYERS=================\n", i)
-		// tour := draws.DrawTournamentBruteForce(opts)
-		tour := draws.DrawTournament(opts)
+		tour := draws.DrawTournamentBruteForce(opts)
+		// tour := draws.DrawTournament(opts)
 
 		tour.Display()
 		fmt.Printf("Nb Collision : %d\n", tour.CountCollision())

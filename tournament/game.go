@@ -27,6 +27,10 @@ func (game Game) IsFullForDoublette() bool {
 	return len(game.Team1) >= 2 && len(game.Team2) >= 2
 }
 
+func (game Game) IsContainsTriplette() bool {
+	return len(game.Team1) >= 3 || len(game.Team2) >= 3
+}
+
 func (game *Game) PlacePlayerInGame(p Player) error {
 	if game.IsFull() {
 		return errors.New("can't place new player. game is full")
@@ -80,6 +84,56 @@ func (game Game) CollisionFoundIfIplaceThisPlayer(p Player, matchPlayed PlayersT
 		}
 	}
 	return res
+}
+
+func (game Game) IsPlayerPlayWith(p1 Player, p2 Player) bool {
+	p1InTeam1 := false
+	p1InTeam2 := false
+	p2InTeam1 := false
+	p2InTeam2 := false
+	for _, p := range game.Team1 {
+		if p == p1 {
+			p1InTeam1 = true
+		}
+		if p == p2 {
+			p2InTeam1 = true
+		}
+	}
+	for _, p := range game.Team2 {
+		if p == p1 {
+			p1InTeam2 = true
+		}
+		if p == p2 {
+			p2InTeam2 = true
+		}
+	}
+
+	return (p1InTeam1 && p2InTeam1) || (p1InTeam2 && p2InTeam2)
+}
+
+func (game Game) IsPlayerPlayAgainst(p1 Player, p2 Player) bool {
+	p1InTeam1 := false
+	p1InTeam2 := false
+	p2InTeam1 := false
+	p2InTeam2 := false
+	for _, p := range game.Team1 {
+		if p == p1 {
+			p1InTeam1 = true
+		}
+		if p == p2 {
+			p2InTeam1 = true
+		}
+	}
+	for _, p := range game.Team2 {
+		if p == p1 {
+			p1InTeam2 = true
+		}
+		if p == p2 {
+			p2InTeam2 = true
+		}
+	}
+
+	return (p1InTeam1 && p2InTeam2) || (p1InTeam2 && p2InTeam1)
 }
 
 func (game Game) CountCollision(matchPlayed PlayersTimeEncountered) int {
