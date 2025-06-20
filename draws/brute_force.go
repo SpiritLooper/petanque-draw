@@ -91,6 +91,7 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 }
 
 func (bTour *SafeTournament) drawAndCompare(i int, opts TounamentDrawOpts) {
+	defer func() { recover() }()
 	bTour.mu.Lock()
 	if (*bTour).bCollision == 0 {
 		return
