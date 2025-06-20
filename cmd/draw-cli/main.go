@@ -22,7 +22,7 @@ func displayColision(col []tournament.PlayerSet) {
 	}
 }
 
-const MIN_PLAYER_TO_GEN = 23
+const MIN_PLAYER_TO_GEN = 24
 const MAX_PLAYER_TO_GEN = MIN_PLAYER_TO_GEN
 
 func main() {

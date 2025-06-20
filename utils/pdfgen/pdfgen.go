@@ -156,14 +156,14 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 	g.pdf.SetFont("Roboto", "", 20)
 	g.pdf.SetTextColor(44, 62, 80)
 	g.pdf.CellFormat(0, 15, fmt.Sprintf("Tournoi de Pétanque - %d Joueurs", playerCount), "", 1, "C", false, 0, "")
-	g.pdf.Ln(5)
+	g.pdf.Ln(1)
 
 	// Sous-titre compact
 	g.pdf.SetFont("Roboto", "I", 10)
 	g.pdf.SetTextColor(100, 100, 100)
 	totalGames := len(*tournament) * len((*tournament)[0])
 	g.pdf.CellFormat(0, 6, fmt.Sprintf("4 tirages - %d parties - %d terrains max", totalGames, len((*tournament)[0])), "", 1, "C", false, 0, "")
-	g.pdf.Ln(8)
+	g.pdf.Ln(1)
 
 	// Generation des tours en 2 colonnes
 	g.addRoundsInTwoColumns(tournament)

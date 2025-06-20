@@ -84,16 +84,16 @@ func DrawTournament(opts TounamentDrawOpts) tournament.Tournament {
 			intPlayerVector = slices.Collect(maps.Keys(intset.CreateIntSet(opts.NB_PLAYER)))
 		}
 		// Generation de la matrice de rencontre
-		encounterMatrix := tournamentRes.GenEncounteredMatrix()
+		encounterMatrixWith, encounterMatrixAgainst := tournamentRes.GenEncounteredMatrix()
 
 		round := make(tournament.Round, 0)
 
 		// Execution de l'algo de tirage
 		switch opts.ALGO_TYPE {
 		case ALGO_BRANCH_AND_BOUND:
-			round = DrawRoundBranchAndBound(encounterMatrix, intPlayerVector, opts.MAX_FIELDS)
+			round = DrawRoundBranchAndBound(encounterMatrixWith, encounterMatrixAgainst, intPlayerVector, opts.MAX_FIELDS)
 		case ALGO_GREEDY:
-			round = DrawRoundGreed(encounterMatrix, intPlayerVector, opts.MAX_FIELDS)
+			round = DrawRoundGreed(encounterMatrixWith, encounterMatrixAgainst, intPlayerVector, opts.MAX_FIELDS)
 		default:
 			if opts.FOLLOWING_PLAYER {
 				round = drawFollowingRound(opts.NB_PLAYER, opts.MAX_FIELDS)

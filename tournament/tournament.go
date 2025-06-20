@@ -28,24 +28,31 @@ func (t *Tournament) Display() {
 	}
 }
 
-func (tournament Tournament) GenEncounteredMatrix() PlayersTimeEncountered {
-	res := make(PlayersTimeEncountered)
+func (tournament Tournament) GenEncounteredMatrix() (PlayersTimeEncountered, PlayersTimeEncountered) {
+	resPlayWith := make(PlayersTimeEncountered)
+	resPlayAgainst := make(PlayersTimeEncountered)
 	for _, round := range tournament {
-		roundMatrix := round.genEncounteredMatrix()
-		for player, _ := range roundMatrix {
-			if _, exist := res[player]; !exist {
-				res[player] = make(map[Player]int)
+		roundMatrixPlayWith, roundMatrixPlayAgainst := round.genEncounteredMatrix()
+		for player, _ := range roundMatrixPlayWith {
+			if _, exist := resPlayWith[player]; !exist {
+				resPlayWith[player] = make(map[Player]int)
 			}
-			maps.Copy(res[player], roundMatrix[player])
+			maps.Copy(resPlayWith[player], roundMatrixPlayWith[player])
+		}
+		for player, _ := range roundMatrixPlayAgainst {
+			if _, exist := resPlayAgainst[player]; !exist {
+				resPlayAgainst[player] = make(map[Player]int)
+			}
+			maps.Copy(resPlayAgainst[player], roundMatrixPlayAgainst[player])
 		}
 	}
-	return res
+	return resPlayWith, resPlayAgainst
 }
 
-func (tournament Tournament) countCollision(matchPlayed PlayersTimeEncountered) int {
+func (tournament Tournament) countCollision(matchPlayedWith PlayersTimeEncountered, matchPlayedAgainst PlayersTimeEncountered) int {
 	res := 0
 	for _, round := range tournament {
-		res += round.CountCollision(matchPlayed)
+		res += round.CountCollision(matchPlayedWith, matchPlayedAgainst)
 	}
 	return res
 }
@@ -53,8 +60,8 @@ func (tournament Tournament) countCollision(matchPlayed PlayersTimeEncountered) 
 func (tournament Tournament) CountCollision() int {
 	res := 0
 	for i, round := range tournament[1:] {
-		matchPlayed := tournament[:i+1].GenEncounteredMatrix()
-		res += round.CountCollision(matchPlayed)
+		matchPlayedWith, matchPlayedAgainst := tournament[:i+1].GenEncounteredMatrix()
+		res += round.CountCollision(matchPlayedWith, matchPlayedAgainst)
 	}
 	return res / 2
 }
@@ -75,12 +82,17 @@ func (tournament Tournament) nbPlayer() int {
 func (tournament Tournament) GetCollision() []PlayerSet {
 	n := tournament.nbPlayer()
 	res := make([]PlayerSet, n)
-	playedMatrix := make([][]int, n, n)
-	for i := range playedMatrix {
-		playedMatrix[i] = make([]int, n, n)
+	playedMatrixWith := make([][]int, n, n)
+	playedMatrixAgainst := make([][]int, n, n)
+	for i := range playedMatrixWith {
+		playedMatrixWith[i] = make([]int, n, n)
+		playedMatrixAgainst[i] = make([]int, n, n)
 		res[i] = make(PlayerSet)
-		for j := range playedMatrix[i] {
-			playedMatrix[i][j] = 0
+		for j := range playedMatrixWith[i] {
+			playedMatrixWith[i][j] = 0
+		}
+		for j := range playedMatrixAgainst[i] {
+			playedMatrixAgainst[i][j] = 0
 		}
 	}
 
@@ -89,29 +101,32 @@ func (tournament Tournament) GetCollision() []PlayerSet {
 			for _, player := range game.Team1 {
 				for _, opponent := range game.Team1 {
 					if player != opponent {
-						playedMatrix[player][opponent] += 1
+						playedMatrixWith[player][opponent] += 1
 					}
 				}
 				for _, opponent := range game.Team2 {
-					playedMatrix[player][opponent] += 1
+					playedMatrixAgainst[player][opponent] += 1
 				}
 			}
 			for _, player := range game.Team2 {
 				for _, opponent := range game.Team1 {
-					playedMatrix[player][opponent] += 1
+					playedMatrixAgainst[player][opponent] += 1
 				}
 				for _, opponent := range game.Team2 {
 					if player != opponent {
-						playedMatrix[player][opponent] += 1
+						playedMatrixWith[player][opponent] += 1
 					}
 				}
 			}
 		}
 	}
 
-	for i := range playedMatrix {
-		for j := range playedMatrix[i] {
-			if playedMatrix[i][j] >= 2 {
+	for i := range playedMatrixWith {
+		for j := range playedMatrixWith[i] {
+			if playedMatrixWith[i][j] >= 2 {
+				res[i][Player(j)] = struct{}{}
+			}
+			if playedMatrixAgainst[i][j] >= 2 {
 				res[i][Player(j)] = struct{}{}
 			}
 		}

@@ -4,7 +4,14 @@ import (
 	"fmt"
 	"math"
 	"petanque-draw/tournament"
+	"sync"
 )
+
+type SafeTournament struct {
+	mu          sync.Mutex
+	bTournament tournament.Tournament
+	bCollision  int
+}
 
 func DrawRandomRoundBruteForce(nbPlayer int, nbRound int, maxField int, MAX_GENERATION int) tournament.Tournament {
 	// Tirer aléatoirement la première ronde
@@ -58,7 +65,7 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 	// Tirer aléatoirement la première ronde
 	tournament := make(tournament.Tournament, 0, nbRound)
 	tournament = append(tournament, drawRandomRound(nbPlayer, maxField))
-	encountredPlayer := tournament.GenEncounteredMatrix()
+	encountredPlayerWith, encountredPlayerAgainst := tournament.GenEncounteredMatrix()
 	bCollision := math.MaxInt
 	bRound := drawRandomRound(nbPlayer, maxField)
 	for i := range nbRound - 1 {
@@ -67,7 +74,7 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 		bCollision = math.MaxInt
 		for j := 0; bCollision != 0 && j < MAX_GENERATION; j++ {
 			round := drawRandomRound(nbPlayer, maxField)
-			collision := round.CountCollision(encountredPlayer)
+			collision := round.CountCollision(encountredPlayerWith, encountredPlayerAgainst)
 			if bCollision > collision {
 				bCollision = collision
 				bRound = round
@@ -78,28 +85,37 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 		}
 		fmt.Println("")
 		tournament = append(tournament, bRound)
-		encountredPlayer = tournament.GenEncounteredMatrix()
+		encountredPlayerWith, encountredPlayerAgainst = tournament.GenEncounteredMatrix()
 	}
 	return tournament
 }
 
-func DrawTournamentBruteForce(opts TounamentDrawOpts) tournament.Tournament {
-	var bTournament tournament.Tournament
-	bCollision := math.MaxInt
-	for i := range opts.MAX_ITERATION {
-		tour := DrawTournament(opts)
-		col := tour.CountCollision()
-		if bCollision > col {
-			bTournament = tour
-			bCollision = col
-			fmt.Printf("Found better tournament with %d collisions\n", bCollision)
-			if col == 0 {
-				return tour
-			}
-		}
-		if i%(opts.MAX_ITERATION/100) == 0 {
-			fmt.Printf(".")
+func (bTour *SafeTournament) drawAndCompare(i int, opts TounamentDrawOpts) {
+	tour := DrawTournament(opts)
+	col := tour.CountCollision()
+	bTour.mu.Lock()
+	if bTour.bCollision == 0 {
+		return
+	}
+	if bTour.bCollision > col {
+		bTour.bTournament = tour
+		bTour.bCollision = col
+		fmt.Printf("Found better tournament with %d collisions\n", bTour.bCollision)
+		if col == 0 {
+			return
 		}
 	}
-	return bTournament
+	bTour.mu.Unlock()
+	if i%(opts.MAX_ITERATION/100) == 0 {
+		fmt.Printf(".")
+	}
+}
+
+func DrawTournamentBruteForce(opts TounamentDrawOpts) tournament.Tournament {
+	bTournament := SafeTournament{}
+	bTournament.bCollision = math.MaxInt
+	for i := range opts.MAX_ITERATION {
+		go bTournament.drawAndCompare(i, opts)
+	}
+	return bTournament.bTournament
 }

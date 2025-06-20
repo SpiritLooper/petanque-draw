@@ -14,24 +14,31 @@ func (round Round) Clone() Round {
 	return cloned
 }
 
-func (round Round) genEncounteredMatrix() PlayersTimeEncountered {
-	res := make(PlayersTimeEncountered)
+func (round Round) genEncounteredMatrix() (PlayersTimeEncountered, PlayersTimeEncountered) {
+	resPlayWith := make(PlayersTimeEncountered)
+	resPlayAgainst := make(PlayersTimeEncountered)
 	for _, game := range round {
-		gameMatrix := game.genEncounteredMatrix()
-		for player := range gameMatrix {
-			if _, exist := res[player]; !exist {
-				res[player] = make(map[Player]int)
+		gameMatrixPlayWith, gameMatrixPlayAgainst := game.genEncounteredMatrix()
+		for player := range gameMatrixPlayWith {
+			if _, exist := resPlayWith[player]; !exist {
+				resPlayWith[player] = make(map[Player]int)
 			}
-			maps.Copy(res[player], gameMatrix[player])
+			maps.Copy(resPlayWith[player], gameMatrixPlayWith[player])
+		}
+		for player := range gameMatrixPlayAgainst {
+			if _, exist := resPlayAgainst[player]; !exist {
+				resPlayAgainst[player] = make(map[Player]int)
+			}
+			maps.Copy(resPlayAgainst[player], gameMatrixPlayAgainst[player])
 		}
 	}
-	return res
+	return resPlayWith, resPlayAgainst
 }
 
-func (round Round) CountCollision(matchPlayed PlayersTimeEncountered) int {
+func (round Round) CountCollision(matchPlayedWith PlayersTimeEncountered, matchPlayedAgainst PlayersTimeEncountered) int {
 	res := 0
 	for _, game := range round {
-		res += game.CountCollision(matchPlayed)
+		res += game.CountCollision(matchPlayedWith, matchPlayedAgainst)
 	}
 	return res
 }

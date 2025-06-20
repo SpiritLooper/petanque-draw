@@ -16,12 +16,12 @@ type RoundState struct {
 }
 
 func (rs RoundState) createRoundUniqEncouterRecur(
-	maxField int, playerEverEncountered tournament.PlayersTimeEncountered,
+	maxField int, playerEverEncounteredWith tournament.PlayersTimeEncountered, playerEverEncounteredAgainst tournament.PlayersTimeEncountered,
 	bestCollision *int, bestResult *RoundState, depth int,
 ) {
 	// Si on a plus de tirage, on retourne le résultat de collision
 	if len(rs.playersNotInGames) <= 0 {
-		*bestCollision = rs.round.CountCollision(playerEverEncountered)
+		*bestCollision = rs.round.CountCollision(playerEverEncounteredWith, playerEverEncounteredAgainst)
 		*bestResult = rs
 		return
 	}
@@ -44,7 +44,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 			if depth < MAX_DEPTH_LOG {
 				fmt.Printf("I'm in depth %d : Loop %d/%d\n", depth, i, len(rs.playersNotInGames))
 			}
-			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &colision, &leafResult, depth+1)
+			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncounteredWith, playerEverEncounteredAgainst, &colision, &leafResult, depth+1)
 			// On regarde les résultat
 			if colision == 0 { // Meilleur qu'on puisse faire ça ne sert à rien de continuer
 				*bestCollision = 0
@@ -77,7 +77,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 			if depth < MAX_DEPTH_LOG {
 				fmt.Printf("I'm in depth %d : Loop %d/%d\n", depth, i, len(rs.playersNotInGames))
 			}
-			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &colision, &leafResult, depth+1)
+			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncounteredWith, playerEverEncounteredAgainst, &colision, &leafResult, depth+1)
 			// On regarde les résultat
 			if colision == 0 { // Meilleur qu'on puisse faire ça ne sert à rien de continuer
 				*bestCollision = 0
@@ -121,7 +121,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 			if depth < MAX_DEPTH_LOG {
 				fmt.Printf("I'm in depth %d : Loop %d/%d\n", depth, i, len(rs.playersNotInGames))
 			}
-			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &colision, &leafResult, depth+1)
+			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncounteredWith, playerEverEncounteredAgainst, &colision, &leafResult, depth+1)
 			// On regarde les résultat
 			if colision == 0 { // Meilleur qu'on puisse faire ça ne sert à rien de continuer
 				*bestCollision = 0
@@ -140,7 +140,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 	for i, iPlayer := range rs.playersNotInGames {
 		newRound := rs.round.Clone()
 		newGame := rs.round[len(rs.round)-1]
-		if newGame.CollisionFoundIfIplaceThisPlayer(tournament.Player(iPlayer), playerEverEncountered) <= MAX_COLLISION_FOUND {
+		if newGame.CollisionFoundIfIplaceThisPlayer(tournament.Player(iPlayer), playerEverEncounteredWith, playerEverEncounteredAgainst) <= MAX_COLLISION_FOUND {
 			newGame.PlacePlayerInGame(tournament.Player(iPlayer))
 			newRound[len(rs.round)-1] = newGame
 			newPlayersNotPlaced := slices.Concat(rs.playersNotInGames[:i], rs.playersNotInGames[i+1:])
@@ -152,7 +152,7 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 			if depth < MAX_DEPTH_LOG {
 				fmt.Printf("I'm in depth %d : Loop %d/%d\n", depth, i, len(rs.playersNotInGames))
 			}
-			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &colision, &leafResult, depth+1)
+			leaf.createRoundUniqEncouterRecur(maxField, playerEverEncounteredWith, playerEverEncounteredAgainst, &colision, &leafResult, depth+1)
 			// On regarde les résultat
 			if colision == 0 { // Meilleur qu'on puisse faire ça ne sert à rien de continuer
 				*bestCollision = 0
@@ -166,10 +166,10 @@ func (rs RoundState) createRoundUniqEncouterRecur(
 	}
 }
 
-func DrawRoundBranchAndBound(playerEverEncountered tournament.PlayersTimeEncountered, players []int, maxField int) tournament.Round {
+func DrawRoundBranchAndBound(playerEverEncounteredWith tournament.PlayersTimeEncountered, playerEverEncounteredAgainst tournament.PlayersTimeEncountered, players []int, maxField int) tournament.Round {
 	var res RoundState
 	init := RoundState{playersNotInGames: players, round: make(tournament.Round, 0, maxField)}
 	bestCol := math.MaxInt
-	init.createRoundUniqEncouterRecur(maxField, playerEverEncountered, &bestCol, &res, 0)
+	init.createRoundUniqEncouterRecur(maxField, playerEverEncounteredWith, playerEverEncounteredAgainst, &bestCol, &res, 0)
 	return res.round.ReArranged()
 }

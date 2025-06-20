@@ -7,7 +7,7 @@ import (
 )
 
 func placePlayerInRoundGreedy(
-	player tournament.Player, playerEverEncounterd tournament.PlayersTimeEncountered,
+	player tournament.Player, playerEverEncounterWith tournament.PlayersTimeEncountered, playerEverEncounterAgainst tournament.PlayersTimeEncountered,
 	totalPlayer int, maxField int, actualRound tournament.Round) tournament.Round {
 	if len(actualRound) == 0 {
 		game := tournament.Game{}
@@ -30,7 +30,7 @@ func placePlayerInRoundGreedy(
 		game := resRound[idxGame]
 
 		if !game.IsFull() {
-			col := game.CollisionFoundIfIplaceThisPlayer(player, playerEverEncounterd)
+			col := game.CollisionFoundIfIplaceThisPlayer(player, playerEverEncounterWith, playerEverEncounterAgainst)
 			// Meilleur cas
 			if !game.IsFullForDoublette() && col == 0 {
 				game.PlacePlayerInGame(player)
@@ -54,15 +54,15 @@ func placePlayerInRoundGreedy(
 		return resRound
 	}
 
-	bGameToPlace.PlacePlayerInGame(player)
+	bGameToPlace.PlacePlayerInGameGreedyTeam(player, playerEverEncounterWith, playerEverEncounterAgainst)
 	resRound[bIdx] = bGameToPlace
 	return resRound
 }
 
-func DrawRoundGreed(playerEverEncountered tournament.PlayersTimeEncountered, players []int, maxField int) tournament.Round {
+func DrawRoundGreed(playerEverEncounteredWith tournament.PlayersTimeEncountered, playerEverEncounteredAgainst tournament.PlayersTimeEncountered, players []int, maxField int) tournament.Round {
 	var round tournament.Round
 	for _, iPlayer := range players {
-		round = placePlayerInRoundGreedy(tournament.Player(iPlayer), playerEverEncountered, len(players), maxField, round)
+		round = placePlayerInRoundGreedy(tournament.Player(iPlayer), playerEverEncounteredWith, playerEverEncounteredAgainst, len(players), maxField, round)
 	}
 	return round.ReArranged()
 }
