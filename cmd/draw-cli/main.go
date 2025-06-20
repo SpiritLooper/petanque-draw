@@ -22,8 +22,8 @@ func displayColision(col []tournament.PlayerSet) {
 	}
 }
 
-const MIN_PLAYER_TO_GEN = 24
-const MAX_PLAYER_TO_GEN = MIN_PLAYER_TO_GEN
+const MIN_PLAYER_TO_GEN = 16
+const MAX_PLAYER_TO_GEN = 40
 
 func main() {
 	opts := draws.NewDefaultDrawOpts()

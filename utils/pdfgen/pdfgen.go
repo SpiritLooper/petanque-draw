@@ -174,62 +174,64 @@ func (g *TournamentPDFGenerator) GenerateTournamentPage(tournament *tournament.T
 
 func (g *TournamentPDFGenerator) generateCollisionFooter(tour *tournament.Tournament) {
 	cellWidth := 10.0
-
-	// En-tete principal
-	g.pdf.SetFont("Roboto", "", cellWidth*1.4)
-	g.pdf.SetTextColor(60, 60, 60)
-	g.pdf.Ln(margin)
-
-	g.pdf.CellFormat(2*cellWidth, cellWidth, "", "", 0, "C", false, 0, "")
-	for i := range len(*tour) {
-		g.pdf.CellFormat(cellWidth, cellWidth, fmt.Sprintf("%d", i+1), "", 0, "C", false, 0, "")
-	}
-	g.pdf.Ln(cellWidth)
-	everDo := make([][]bool, (*tour)[0].CountPlacedPlayer())
-	for i := range (*tour)[0].CountPlacedPlayer() {
-		everDo[i] = make([]bool, (*tour)[0].CountPlacedPlayer())
-		for j := range (*tour)[0].CountPlacedPlayer() {
-			everDo[i][j] = false
-		}
-	}
 	collisions := tour.GetCollision()
-	for i, playerSet := range collisions {
-		if len(playerSet) > 0 {
-			for j := range playerSet {
-				if _, exist := collisions[i][j]; exist && !everDo[tournament.Player(i)][j] && !everDo[j][tournament.Player(i)] {
-					everDo[tournament.Player(i)][j] = true
-					everDo[j][tournament.Player(i)] = true
-					g.pdf.SetTextColor(10, 10, 10)
-					g.pdf.CellFormat(cellWidth*2, cellWidth, fmt.Sprintf("%d-%d", i+1, j+1), "", 0, "C", false, 0, "")
-					// On parcours les parties trouvés avec la collisions
-					for _, round := range *tour {
-						found := false
-						for _, game := range round {
-							if game.IsPlayerPlayWith(tournament.Player(i), j) {
-								found = true
-								g.pdf.SetTextColor(20, 200, 80)
-								if game.IsContainsTriplette() {
-									g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
-								} else {
-									g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
+
+	if tour.CountCollision() > 0 {
+		// En-tete principal
+		g.pdf.SetFont("Roboto", "", cellWidth*1.4)
+		g.pdf.SetTextColor(60, 60, 60)
+		g.pdf.Ln(margin)
+
+		g.pdf.CellFormat(2*cellWidth, cellWidth, "", "", 0, "C", false, 0, "")
+		for i := range len(*tour) {
+			g.pdf.CellFormat(cellWidth, cellWidth, fmt.Sprintf("%d", i+1), "", 0, "C", false, 0, "")
+		}
+		g.pdf.Ln(cellWidth)
+		everDo := make([][]bool, (*tour)[0].CountPlacedPlayer())
+		for i := range (*tour)[0].CountPlacedPlayer() {
+			everDo[i] = make([]bool, (*tour)[0].CountPlacedPlayer())
+			for j := range (*tour)[0].CountPlacedPlayer() {
+				everDo[i][j] = false
+			}
+		}
+		for i, playerSet := range collisions {
+			if len(playerSet) > 0 {
+				for j := range playerSet {
+					if _, exist := collisions[i][j]; exist && !everDo[tournament.Player(i)][j] && !everDo[j][tournament.Player(i)] {
+						everDo[tournament.Player(i)][j] = true
+						everDo[j][tournament.Player(i)] = true
+						g.pdf.SetTextColor(10, 10, 10)
+						g.pdf.CellFormat(cellWidth*2, cellWidth, fmt.Sprintf("%d-%d", i+1, j+1), "", 0, "C", false, 0, "")
+						// On parcours les parties trouvés avec la collisions
+						for _, round := range *tour {
+							found := false
+							for _, game := range round {
+								if game.IsPlayerPlayWith(tournament.Player(i), j) {
+									found = true
+									g.pdf.SetTextColor(20, 200, 80)
+									if game.IsContainsTriplette() {
+										g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
+									} else {
+										g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
+									}
+									break
+								} else if game.IsPlayerPlayAgainst(tournament.Player(i), j) {
+									found = true
+									g.pdf.SetTextColor(255, 40, 40)
+									if game.IsContainsTriplette() {
+										g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
+									} else {
+										g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
+									}
+									break
 								}
-								break
-							} else if game.IsPlayerPlayAgainst(tournament.Player(i), j) {
-								found = true
-								g.pdf.SetTextColor(255, 40, 40)
-								if game.IsContainsTriplette() {
-									g.pdf.CellFormat(cellWidth, cellWidth, "T", "1", 0, "C", false, 0, "")
-								} else {
-									g.pdf.CellFormat(cellWidth, cellWidth, "D", "1", 0, "C", false, 0, "")
-								}
-								break
+							}
+							if !found {
+								g.pdf.CellFormat(cellWidth, cellWidth, "", "1", 0, "C", false, 0, "")
 							}
 						}
-						if !found {
-							g.pdf.CellFormat(cellWidth, cellWidth, "", "1", 0, "C", false, 0, "")
-						}
+						g.pdf.Ln(cellWidth)
 					}
-					g.pdf.Ln(cellWidth)
 				}
 			}
 		}

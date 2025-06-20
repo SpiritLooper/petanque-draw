@@ -52,31 +52,34 @@ func (game *Game) PlacePlayerInGameGreedyTeam(p Player, playWith PlayersTimeEnco
 		return errors.New("can't place new player. game is full")
 	}
 
-	if len(game.Team1) >= 3 {
-		(*game).Team2 = append((*game).Team2, p)
-		return nil
-	}
-	if len(game.Team2) >= 3 {
-		(*game).Team1 = append((*game).Team1, p)
-		return nil
-	}
-
-	colTeam1 := game.countCollisionIfPlaceTeam1(p, playWith, playAgainst)
-	colTeam2 := game.countCollisionIfPlaceTeam2(p, playWith, playAgainst)
-
-	if colTeam1 > colTeam2 {
-		(*game).Team2 = append((*game).Team2, p)
-		return nil
-	} else if colTeam1 < colTeam2 {
-		(*game).Team1 = append((*game).Team1, p)
-		return nil
-	}
-
 	if len(game.Team1) > len(game.Team2) {
 		(*game).Team2 = append((*game).Team2, p)
 	} else {
 		(*game).Team1 = append((*game).Team1, p)
 	}
+
+	bCol := game.CountCollision(playWith, playAgainst)
+	if bCol == 0 {
+		return nil
+	}
+
+	bGame := game.Clone()
+	for i := range game.Team1 {
+		for j := range game.Team2 {
+			gameSwap := game.Clone()
+			tmp := gameSwap.Team1[i]
+			gameSwap.Team1[i] = gameSwap.Team2[j]
+			gameSwap.Team2[j] = tmp
+
+			col := gameSwap.CountCollision(playWith, playAgainst)
+			if col < bCol {
+				bCol = col
+				bGame = gameSwap
+			}
+		}
+	}
+	game = &bGame
+
 	return nil
 }
 
@@ -169,7 +172,7 @@ func (game Game) CollisionFoundIfIplaceThisPlayer(p Player, matchPlayedWith Play
 			resTeam2 += val
 		}
 	}
-	return min(resTeam1, resTeam2)
+	return max(resTeam1, resTeam2)
 }
 
 func (game Game) IsPlayerPlayWith(p1 Player, p2 Player) bool {

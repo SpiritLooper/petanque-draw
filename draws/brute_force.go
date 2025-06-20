@@ -91,15 +91,19 @@ func DrawRandomTournamentStepByStep(nbPlayer int, nbRound int, maxField int, MAX
 }
 
 func (bTour *SafeTournament) drawAndCompare(i int, opts TounamentDrawOpts) {
-	tour := DrawTournament(opts)
-	col := tour.CountCollision()
 	bTour.mu.Lock()
-	if bTour.bCollision == 0 {
+	if (*bTour).bCollision == 0 {
 		return
 	}
-	if bTour.bCollision > col {
-		bTour.bTournament = tour
-		bTour.bCollision = col
+	bTour.mu.Unlock()
+
+	tour := DrawTournament(opts)
+	col := tour.CountCollision()
+
+	bTour.mu.Lock()
+	if (*bTour).bCollision > col {
+		(*bTour).bTournament = tour
+		(*bTour).bCollision = col
 		fmt.Printf("Found better tournament with %d collisions\n", bTour.bCollision)
 		if col == 0 {
 			return
